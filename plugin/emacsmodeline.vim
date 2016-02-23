@@ -95,6 +95,17 @@ function! <SID>SetVimToggleOption(modeline, emacs_name, vim_name, nil_value)
     endif
 endfunc
 
+function! <SID>SetVimCFileStyleOption(modeline)
+    let value = <SID>FindParameterValue(a:modeline, 'c-file-style', '"[A-Za-z]\+"')
+    let value_stripped = substitute(value, '"\(.*\)"', '\1', '')
+
+    if (value_stripped == 'gnu')
+        exec 'set sw=2 ts=2 sts=2 et'
+    else
+        exec 'set sw=4 ts=4 sts=4 et'
+    endif
+endfunc
+
 function! ParseEmacsModeLine()
     " Prepare to scan the first and last g:emacs_modelines lines.
     let max = line("$")
@@ -123,6 +134,7 @@ function! ParseEmacsModeLine()
 
             call <SID>SetVimToggleOption(modeline, 'buffer-read-only',   'readonly',     0)
             call <SID>SetVimToggleOption(modeline, 'indent-tabs-mode',   'expandtab',    1)
+            call <SID>SetVimCFileStyleOption(modeline)
 
             let value = substitute(modeline, '^ *\([^ ]*\) *$', '\L\1', '')
             if (has_key(g:emacsModeDict, value))
@@ -131,7 +143,6 @@ function! ParseEmacsModeLine()
 
             " Other emacs options seen in the wild include:
             "  * c-basic-offset: something like tab-width.
-            "  * c-file-style: no vim equivalent (?).
             "  * coding: text encoding.  Non-UTF-8 files are evil.
             "  * compile-command: probably equivalent to &makeprg.  However, vim will refuse to
             "    set it from a modeline, as a security risk, and we follow that decision here.
